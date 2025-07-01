@@ -7,9 +7,7 @@ from itertools import product
 
 from scipy._lib import _pep440
 import numpy as np
-from numpy.testing import (
-    assert_array_almost_equal_nulp, assert_warns, suppress_warnings
-)
+from numpy.testing import assert_array_almost_equal_nulp
 import pytest
 from pytest import raises as assert_raises
 from scipy._lib._array_api import (
@@ -213,7 +211,7 @@ class TestTf2zpk:
     def test_bad_filter(self):
         # Regression test for #651: better handling of badly conditioned
         # filter coefficients.
-        with suppress_warnings():
+        with warnings.catch_warnings():
             warnings.simplefilter("error", BadCoefficients)
             assert_raises(BadCoefficients, tf2zpk, [1e-15], [1.0, 1.0])
 
@@ -320,7 +318,6 @@ class TestSos2Zpk:
         xp_assert_close(_sort_cmplx(p2, xp=xp), _sort_cmplx(p, xp=xp))
         assert k2 == k
 
-    @pytest.mark.thread_unsafe
     def test_fewer_zeros(self, xp):
         """Test not the expected number of p/z (effectively at origin)."""
         sos = butter(3, 0.1, output='sos')
@@ -1251,6 +1248,7 @@ class TestFreqz_sos:
         # a check that dB[w <= 0.2] is less than or almost equal to -150.
         assert xp.max(dB[w <= 0.2]) < -150*(1 - 1e-12)
 
+    @pytest.mark.thread_unsafe(reason="segfaults on MacOS")
     @mpmath_check("0.10")
     def test_freqz_sos_against_mp(self, xp):
         # Compare the result of freqz_sos applied to a high order Butterworth
@@ -2011,7 +2009,6 @@ class TestButtord:
             buttord([20, 50], [14, 60], 1, -2)
         assert "gstop should be larger than 0.0" in str(exc_info.value)
 
-    @pytest.mark.thread_unsafe
     def test_runtime_warnings(self):
         msg = "Order is zero.*|divide by zero encountered"
         with pytest.warns(RuntimeWarning, match=msg):
@@ -4695,7 +4692,6 @@ class TestGroupDelay:
                                 0.229038045801298, 0.212185774208521])
         assert_array_almost_equal(gd, matlab_gd)
 
-    @pytest.mark.thread_unsafe
     @skip_xp_backends(np_only=True, reason="numpy.convolve")
     def test_singular(self, xp):
         # Let's create a filter with zeros and poles on the unit circle and
@@ -4711,7 +4707,8 @@ class TestGroupDelay:
 
         w = xp.asarray([0.1 * xp.pi, 0.25 * xp.pi, -0.5 * xp.pi, -0.8 * xp.pi])
 
-        w, gd = assert_warns(UserWarning, group_delay, (b, a), w=w)
+        with pytest.warns(UserWarning):
+            w, gd = group_delay((b, a), w=w)
 
     def test_backward_compat(self, xp):
         # For backward compatibility, test if None act as a wrapper for default

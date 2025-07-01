@@ -18,6 +18,8 @@ except ImportError:
     mp = MissingModule('mpmath')
 
 
+pytestmark = pytest.mark.thread_unsafe(reason="segfaults on MacOS in parallel")
+    
 @check_version(mp, '0.19')
 def test_g():
     # Test data for the g_k. See DLMF 5.11.4.

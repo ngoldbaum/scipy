@@ -1,8 +1,7 @@
 import math
 import numpy as np
 
-from numpy.testing import assert_warns
-from pytest import raises as assert_raises
+from pytest import raises as assert_raises, warns as assert_warns
 import pytest
 
 import scipy._lib.array_api_extra as xpx
@@ -678,7 +677,7 @@ class TestFirls:
 
 class TestMinimumPhase:
 
-    @pytest.mark.thread_unsafe
+    
     def test_bad_args(self):
         # not enough taps
         assert_raises(ValueError, minimum_phase, [1.])

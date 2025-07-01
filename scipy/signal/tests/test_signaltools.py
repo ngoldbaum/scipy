@@ -1,5 +1,6 @@
 import sys
 import math
+import warnings
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from decimal import Decimal
@@ -8,9 +9,8 @@ from math import gcd
 
 import pytest
 from pytest import raises as assert_raises
-from numpy.testing import (
-    assert_allclose,    # until object arrays are gone
-    suppress_warnings)
+# until object arrays are gone
+from numpy.testing import assert_allclose
 import numpy as np
 from numpy.exceptions import ComplexWarning
 
@@ -281,7 +281,7 @@ class TestConvolve:
         assert_raises(ValueError, convolve, [1], [[2]])
         assert_raises(ValueError, convolve, [3], 2)
 
-    @pytest.mark.thread_unsafe
+    
     @skip_xp_backends(np_only=True)
     def test_dtype_deprecation(self, xp):
         # gh-21211
@@ -343,8 +343,8 @@ class TestConvolve2d:
 
     def test_fillvalue_errors(self, xp):
         msg = "could not cast `fillvalue` directly to the output "
-        with np.testing.suppress_warnings() as sup:
-            sup.filter(ComplexWarning, "Casting complex values")
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", "Casting complex values", ComplexWarning)
             with assert_raises(ValueError, match=msg):
                 convolve2d([[1]], [[1, 2]], fillvalue=1j)
 
@@ -932,7 +932,7 @@ class TestFFTConvolve:
         out = fftconvolve(a, b, 'full', axes=[0])
         xp_assert_close(out, expected, atol=1e-10)
 
-    @pytest.mark.thread_unsafe
+    
     @skip_xp_backends(np_only=True)
     def test_fft_nan(self, xp):
         n = 1000
@@ -2314,7 +2314,7 @@ class _TestLinearFilter:
         )
 
     @skip_xp_backends(np_only=True)
-    @pytest.mark.thread_unsafe
+    
     def test_dtype_deprecation(self, xp):
         # gh-21211
         a = np.asarray([1, 2, 3, 6, 5, 3], dtype=object)
@@ -2615,7 +2615,7 @@ class TestCorrelate:
         xp_assert_close(correlate(a, b, mode='full'), xp.asarray([6, 17, 32, 23, 12]))
         xp_assert_close(correlate(a, b, mode='valid'), xp.asarray([32]))
 
-    @pytest.mark.thread_unsafe
+    
     @skip_xp_backends(np_only=True)
     def test_dtype_deprecation(self, xp):
         # gh-21211
@@ -3137,7 +3137,7 @@ def test_choose_conv_method(xp):
         assert choose_conv_method(x, h, mode=mode) == 'direct'
 
 
-@pytest.mark.thread_unsafe
+
 @skip_xp_backends(np_only=True)
 def test_choose_conv_dtype_deprecation(xp):
     # gh-21211
@@ -3222,13 +3222,15 @@ class TestDecimate:
         assert d1.shape == (30, 15)
 
     def test_phaseshift_FIR(self, xp):
-        with suppress_warnings() as sup:
-            sup.filter(BadCoefficients, "Badly conditioned filter")
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore", "Badly conditioned filter", BadCoefficients)
             self._test_phaseshift(method='fir', zero_phase=False)
 
     def test_zero_phase_FIR(self, xp):
-        with suppress_warnings() as sup:
-            sup.filter(BadCoefficients, "Badly conditioned filter")
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore", "Badly conditioned filter", BadCoefficients)
             self._test_phaseshift(method='fir', zero_phase=True)
 
     def test_phaseshift_IIR(self, xp):
@@ -4554,7 +4556,7 @@ class TestSOSFilt:
         _, zf = sosfilt(sos, xp.ones(40, dtype=dt), zi=zi.tolist())
         xp_assert_close(zf, zi, rtol=1e-13, check_dtype=False)
 
-    @pytest.mark.thread_unsafe
+    
     @skip_xp_backends(np_only=True)
     def test_dtype_deprecation(self, dt, xp):
         # gh-21211

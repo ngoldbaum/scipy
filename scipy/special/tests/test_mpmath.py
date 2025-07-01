@@ -27,6 +27,7 @@ try:
 except ImportError:
     mpmath = MissingModule('mpmath')
 
+pytestmark = pytest.mark.thread_unsafe("segfaults on MacOS")
 
 # ------------------------------------------------------------------------------
 # expi

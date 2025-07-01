@@ -1,11 +1,12 @@
 """Test functions for the sparse.linalg._expm_multiply module."""
+import warnings
+
 from functools import partial
 from itertools import product
 
 import numpy as np
 import pytest
-from numpy.testing import (assert_allclose, assert_, assert_equal,
-                           suppress_warnings)
+from numpy.testing import (assert_allclose, assert_, assert_equal)
 from scipy.sparse import SparseEfficiencyWarning
 import scipy.sparse
 from scipy.sparse.linalg import aslinearoperator
@@ -81,7 +82,7 @@ class TestExpmActionSimple:
                 assert_(less_than_or_close(estimated, exact))
                 assert_(less_than_or_close(exact, 3*estimated))
 
-    @pytest.mark.thread_unsafe
+    
     def test_expm_multiply(self):
         np.random.seed(1234)
         n = 40
@@ -99,7 +100,7 @@ class TestExpmActionSimple:
             observed = expm_multiply(aslinearoperator(A), B, traceA=traceA)
             assert_allclose(observed, expected)
 
-    @pytest.mark.thread_unsafe
+    
     def test_matrix_vector_multiply(self):
         np.random.seed(1234)
         n = 40
@@ -113,7 +114,7 @@ class TestExpmActionSimple:
             observed = estimated(expm_multiply)(aslinearoperator(A), v)
             assert_allclose(observed, expected)
 
-    @pytest.mark.thread_unsafe
+    
     def test_scaled_expm_multiply(self):
         np.random.seed(1234)
         n = 40
@@ -131,7 +132,7 @@ class TestExpmActionSimple:
                 )
                 assert_allclose(observed, expected)
 
-    @pytest.mark.thread_unsafe
+    
     def test_scaled_expm_multiply_single_timepoint(self):
         np.random.seed(1234)
         t = 0.1
@@ -147,7 +148,7 @@ class TestExpmActionSimple:
         )
         assert_allclose(observed, expected)
 
-    @pytest.mark.thread_unsafe
+    
     def test_sparse_expm_multiply(self):
         rng = np.random.default_rng(1234)
         n = 40
@@ -157,18 +158,24 @@ class TestExpmActionSimple:
             A = scipy.sparse.random_array((n, n), density=0.05, rng=rng)
             B = rng.standard_normal((n, k))
             observed = expm_multiply(A, B)
-            with suppress_warnings() as sup:
-                sup.filter(SparseEfficiencyWarning,
-                           "splu converted its input to CSC format")
-                sup.filter(SparseEfficiencyWarning,
-                           "spsolve is more efficient when sparse b is in the"
-                           " CSC matrix format")
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    "splu converted its input to CSC format",
+                    SparseEfficiencyWarning,
+                )
+                warnings.filterwarnings(
+                    "ignore",
+                    "spsolve is more efficient when sparse b is in the "
+                    "CSC matrix format",
+                    SparseEfficiencyWarning,
+                )
                 expected = sp_expm(A).dot(B)
             assert_allclose(observed, expected)
             observed = estimated(expm_multiply)(aslinearoperator(A), B)
             assert_allclose(observed, expected)
 
-    @pytest.mark.thread_unsafe
+    
     def test_complex(self):
         A = np.array([
             [1j, 1j],
@@ -202,16 +209,22 @@ class TestExpmActionInterval:
                                   num=num, endpoint=endpoint)
                 samples = np.linspace(start=start, stop=stop,
                                       num=num, endpoint=endpoint)
-                with suppress_warnings() as sup:
-                    sup.filter(SparseEfficiencyWarning,
-                               "splu converted its input to CSC format")
-                    sup.filter(SparseEfficiencyWarning,
-                               "spsolve is more efficient when sparse b is in"
-                               " the CSC matrix format")
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        "ignore",
+                        "splu converted its input to CSC format",
+                        SparseEfficiencyWarning,
+                    )
+                    warnings.filterwarnings(
+                        "ignore",
+                        "spsolve is more efficient when sparse b is in"
+                        " the CSC matrix format",
+                        SparseEfficiencyWarning,
+                    )
                     for solution, t in zip(X, samples):
                         assert_allclose(solution, sp_expm(t*A).dot(target))
 
-    @pytest.mark.thread_unsafe
+    
     @pytest.mark.fail_slow(20)
     def test_expm_multiply_interval_vector(self):
         np.random.seed(1234)
@@ -239,7 +252,7 @@ class TestExpmActionInterval:
                 assert_allclose(sol_given, correct)
                 assert_allclose(sol_wrong, correct)
 
-    @pytest.mark.thread_unsafe
+    
     @pytest.mark.fail_slow(20)
     def test_expm_multiply_interval_matrix(self):
         np.random.seed(1234)
@@ -324,7 +337,7 @@ class TestExpmActionInterval:
             raise Exception(msg)
 
 
-@pytest.mark.thread_unsafe
+
 @pytest.mark.parametrize("dtype_a", DTYPES)
 @pytest.mark.parametrize("dtype_b", DTYPES)
 @pytest.mark.parametrize("b_is_matrix", [False, True])

@@ -3,7 +3,6 @@ import itertools
 import pytest
 import numpy as np
 
-from numpy.testing import assert_warns
 from numpy.exceptions import ComplexWarning
 
 from scipy._lib._array_api import (
@@ -697,7 +696,7 @@ class TestRegularGridInterpolator:
                 (x, y), data, method='slinear',  solver_args={'woof': 42}
             )
 
-    @pytest.mark.thread_unsafe
+    
     def test_concurrency(self):
         points, values = self._get_sample_4d()
         sample = np.array([[0.1 , 0.1 , 1.  , 0.9 ],
@@ -968,7 +967,7 @@ class TestInterpN:
 
         xp_assert_close(v1, v2)
 
-    @pytest.mark.thread_unsafe
+    
     def test_complex_pchip(self):
         # Complex-valued data deprecated for pchip
         x, y, values = self._sample_2d_data()
@@ -980,7 +979,7 @@ class TestInterpN:
         with pytest.raises(ValueError, match='real'):
             interpn(points, values, sample, method='pchip')
 
-    @pytest.mark.thread_unsafe
+    
     def test_complex_spline2fd(self):
         # Complex-valued data not supported by spline2fd
         x, y, values = self._sample_2d_data()
@@ -989,7 +988,7 @@ class TestInterpN:
 
         sample = np.array([[1, 2.3, 5.3, 0.5, 3.3, 1.2, 3],
                            [1, 3.3, 1.2, 4.0, 5.0, 1.0, 3]]).T
-        with assert_warns(ComplexWarning):
+        with pytest.warns(ComplexWarning):
             interpn(points, values, sample, method='splinef2d')
 
     @pytest.mark.parametrize(
