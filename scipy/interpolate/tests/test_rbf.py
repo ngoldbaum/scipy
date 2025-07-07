@@ -3,7 +3,6 @@
 
 import numpy as np
 
-import pytest
 
 from scipy._lib._array_api import assert_array_almost_equal, assert_almost_equal
 
