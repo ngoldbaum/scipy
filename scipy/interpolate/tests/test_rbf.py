@@ -231,7 +231,6 @@ def test_rbf_epsilon_none_collinear():
     assert rbf.epsilon > 0
 
 
-@pytest.mark.thread_unsafe
 def test_rbf_concurrency():
     x = linspace(0, 10, 100)
     y0 = sin(x)

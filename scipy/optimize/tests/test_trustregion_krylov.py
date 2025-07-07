@@ -153,7 +153,6 @@ class TestKrylovQuadraticSubproblem:
                                       -0.84954934])
         assert_array_almost_equal(hits_boundary, True)
 
-    @pytest.mark.thread_unsafe
     def test_disp(self, capsys):
         H = -np.eye(5)
         g = np.array([0, 0, 0, 0, 1e-6])
