@@ -485,7 +485,7 @@ jobs:
         pip install -i https://pypi.anaconda.org/scientific-python-nightly-wheels/simple numpy
         pip install meson-python Cython pybind11 pythran ninja
         pip install -r requirements/openblas.txt
-        pip install spin pytest pytest-xdist threadpoolctl pooch hypothesis scikit-umfpack
+        pip install spin pytest pytest-xdist threadpoolctl pooch hypothesis
 
     - name: Install pytest-run-parallel
       if: ${{ matrix.parallel == '1'}}
